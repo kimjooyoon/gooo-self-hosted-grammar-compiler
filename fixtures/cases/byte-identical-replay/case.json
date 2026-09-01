@@ -3,6 +3,6 @@
   "source": "../base-self-parse/source.gooo",
   "expected_decision": "CLOSED",
   "mode": "byte-identical-replay",
-  "reference": "base-self-parse/source.gooo",
+  "reference": "fixtures/cases/base-self-parse/source.gooo",
   "require_byte_identical_replay": true
 }

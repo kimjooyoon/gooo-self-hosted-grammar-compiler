@@ -3,7 +3,7 @@
   "source": "source.gooo",
   "expected_decision": "CLOSED",
   "mode": "additive-extension",
-  "reference": "base-self-parse/source.gooo",
+  "reference": "fixtures/cases/base-self-parse/source.gooo",
   "require_semantic_change": true,
   "require_syntax_change": true
 }
