@@ -1,0 +1,11 @@
+grammar gooo v1
+stage 2 origin=external
+ambiguity policy=reject
+type GrammarSource
+effect parse lower generate execute verify
+fixed_denominator cases=7
+token IDENT /[A-Za-z_][A-Za-z0-9_]*/
+token WS /[ \t\r\n]+/ skip=true
+production file -> IDENT
+precedence IDENT level=10
+associativity IDENT left

@@ -1,0 +1,37 @@
+# Additive syntax is accepted by the generated parser and lowered into a new IR.
+grammar gooo v1
+stage 1 origin=generated-from-stage0
+ambiguity policy=reject
+type GrammarSource
+effect parse lower generate execute verify
+fixed_denominator cases=7
+token IDENT /[A-Za-z_][A-Za-z0-9_]*/ role=identifier
+token NUMBER /[0-9]+/ role=number
+token STRING /"([^"\\]|\\.)*"/ role=literal
+token REGEX /\/([^\/\\]|\\.)*\// role=pattern
+token WS /[ \t\r\n]+/ skip=true
+token COMMENT /#[^\n]*/ skip=true
+token ARROW "->"
+token EQUAL "="
+token KW_GRAMMAR "grammar"
+token KW_STAGE "stage"
+token KW_AMBIGUITY "ambiguity"
+token KW_POLICY "policy"
+token KW_TOKEN "token"
+token KW_PRODUCTION "production"
+token KW_PRECEDENCE "precedence"
+token KW_ASSOCIATIVITY "associativity"
+token KW_USE "use"
+production file -> grammar_decl stage_decl ambiguity_decl token_decl production_decl precedence_decl associativity_decl use_decl
+production grammar_decl -> KW_GRAMMAR IDENT IDENT
+production stage_decl -> KW_STAGE NUMBER IDENT
+production ambiguity_decl -> KW_AMBIGUITY IDENT
+production token_decl -> KW_TOKEN IDENT REGEX
+production production_decl -> KW_PRODUCTION IDENT ARROW IDENT
+production precedence_decl -> KW_PRECEDENCE IDENT IDENT
+production associativity_decl -> KW_ASSOCIATIVITY IDENT IDENT
+production use_decl -> KW_USE IDENT
+precedence IDENT level=10
+precedence ARROW level=5
+associativity IDENT left
+associativity ARROW nonassoc

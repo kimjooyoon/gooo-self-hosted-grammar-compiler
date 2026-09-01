@@ -1,0 +1,14 @@
+{
+  "schema": "gooo/self-hosted-grammar-compiler/fixed-denominator/v1",
+  "total": 7,
+  "cases": [
+    {"id": "base-self-parse", "expected": "CLOSED"},
+    {"id": "additive-syntax-extension", "expected": "CLOSED"},
+    {"id": "precedence-preserving-change", "expected": "CLOSED"},
+    {"id": "ambiguous-grammar", "expected": "UNKNOWN"},
+    {"id": "conflicting-precedence", "expected": "REFUTED"},
+    {"id": "forbidden-stage-escape", "expected": "REFUTED"},
+    {"id": "byte-identical-replay", "expected": "CLOSED"}
+  ],
+  "decision_order": ["REFUTED", "UNKNOWN", "CLOSED"]
+}
