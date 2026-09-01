@@ -236,6 +236,7 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(raw))
 	line := 0
 	grammarSeen := false
+	programSeen := false
 	for scanner.Scan() {
 		line++
 		fields, err := generatedFields(scanner.Text())
@@ -245,6 +246,8 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 		if kind == "grammar" {
 			if grammarSeen || len(fields) != 3 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid grammar declaration", GeneratedStage, line) }
 			grammarSeen = true
+		} else if kind == "package" || kind == "program" {
+			programSeen = true
 		} else if kind == "package" || kind == "namespace" {
 			if len(fields) != 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid %s declaration", GeneratedStage, line, kind) }
 		} else if kind == "program" || kind == "entity" || kind == "activity" {
@@ -263,7 +266,7 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 		tree.Root.Children = append(tree.Root.Children, node)
 	}
 	if err := scanner.Err(); err != nil { return model.SyntaxTree{}, err }
-	if !grammarSeen { return model.SyntaxTree{}, fmt.Errorf("generated stage %d: grammar declaration is missing", GeneratedStage) }
+	if !grammarSeen && !programSeen { return model.SyntaxTree{}, fmt.Errorf("generated stage %d: grammar or Gooo program declaration is missing", GeneratedStage) }
 	return tree, nil
 }
 

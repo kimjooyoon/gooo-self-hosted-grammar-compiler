@@ -30,6 +30,7 @@ func parseGeneratedGrammar(raw []byte, stage string) (model.SyntaxTree, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(raw))
 	line := 0
 	grammarSeen := false
+	programSeen := false
 	for scanner.Scan() {
 		line++
 		fields, err := generatedFields(scanner.Text())
@@ -48,6 +49,8 @@ func parseGeneratedGrammar(raw []byte, stage string) (model.SyntaxTree, error) {
 				return model.SyntaxTree{}, fmt.Errorf("%s line %d: duplicate grammar declaration", stage, line)
 			}
 			grammarSeen = true
+		} else if kind == "package" || kind == "program" {
+			programSeen = true
 		}
 		node := model.SyntaxNode{Kind: kind, Line: line}
 		for _, field := range fields {
@@ -62,8 +65,8 @@ func parseGeneratedGrammar(raw []byte, stage string) (model.SyntaxTree, error) {
 	if err := scanner.Err(); err != nil {
 		return model.SyntaxTree{}, err
 	}
-	if !grammarSeen {
-		return model.SyntaxTree{}, fmt.Errorf("%s: grammar declaration is missing", stage)
+	if !grammarSeen && !programSeen {
+		return model.SyntaxTree{}, fmt.Errorf("%s: grammar or Gooo program declaration is missing", stage)
 	}
 	return tree, nil
 }
