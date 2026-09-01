@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          check-latest: true
+      - name: Format check
+        run: test -z "$(gofmt -l cmd internal generated)"
+      - name: Vet
+        run: go vet ./...
+      - name: Build repository and committed generated parser
+        run: go build ./...
+      - name: Unit tests
+        run: go test -count=1 ./...
+      - name: Generate and build stage artifacts
+        run: |
+          mkdir -p "$PWD/generated/ci"
+          go run ./cmd/gooo-grammar-compiler bootstrap \
+            --grammar "$PWD/meta/gooo-grammar.gooo" \
+            --out-dir "$PWD/generated/ci"
+          go build ./generated/ci/stage1 ./generated/ci/stage2
+      - name: Run generated stage2 parser against sample
+        run: go test -count=1 -tags generated_ci ./generated/ci/stage2
+      - name: Run committed stage2 parser against sample
+        run: go run ./cmd/gooo-grammar-compiler sample --input "$PWD/examples/sample.gooo"
+      - name: Fixed conformance
+        run: |
+          mkdir -p "$PWD/.ci"
+          go run ./cmd/gooo-grammar-compiler conformance \
+            --cases "$PWD/fixtures/cases" \
+            --reference-root "$PWD" \
+            --out "$PWD/.ci/conformance.json"
+      - name: Exact CI evidence
+        run: ./scripts/ci/collect-evidence.sh
+      - name: Upload evidence and generated artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gooo-self-hosted-grammar-compiler-evidence
+          path: |
+            .ci/evidence.json
+            .ci/conformance.json
+            generated/ci/**/*.go

@@ -1,0 +1,6 @@
+{
+  "id": "ambiguous-grammar",
+  "source": "source.gooo",
+  "expected_decision": "UNKNOWN",
+  "mode": "unresolved-ambiguity"
+}

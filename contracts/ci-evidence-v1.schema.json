@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimjooyoon/gooo-self-hosted-grammar-compiler/contracts/ci-evidence-v1.schema.json",
+  "title": "gooo self-hosted grammar compiler CI evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "toolchain", "repository_root", "root_readme_excluded", "input_repository_writes", "caller_owned_temp_output_only", "automatic_authority", "inventory", "compile", "build", "test", "conformance", "integration", "tests", "local_executions", "conformance_pass"],
+  "properties": {
+    "schema": {"const": "gooo/self-hosted-grammar-compiler/ci-evidence/v1"},
+    "toolchain": {"type": "string", "minLength": 1},
+    "repository_root": {"type": "string", "minLength": 1},
+    "root_readme_excluded": {"const": true},
+    "input_repository_writes": {"const": 0},
+    "caller_owned_temp_output_only": {"const": true},
+    "automatic_authority": {"type": "object", "additionalProperties": false, "required": ["commit", "push", "merge", "release"], "properties": {"commit": {"const": 0}, "push": {"const": 0}, "merge": {"const": 0}, "release": {"const": 0}}},
+    "inventory": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["scope", "extension", "physical_lines", "descendant_dirs", "regular_files", "generated_files", "generated_bytes"],
+        "properties": {
+          "scope": {"const": "repository"}, "extension": {"enum": [".go", ".gooo"]},
+          "physical_lines": {"type": "integer", "minimum": 0}, "descendant_dirs": {"type": "integer", "minimum": 0},
+          "regular_files": {"type": "integer", "minimum": 0}, "generated_files": {"type": "integer", "minimum": 0}, "generated_bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "compile": {"$ref": "#/$defs/metric"}, "build": {"$ref": "#/$defs/metric"}, "test": {"$ref": "#/$defs/metric"}, "conformance": {"$ref": "#/$defs/metric"}, "integration": {"$ref": "#/$defs/metric"},
+    "tests": {"$ref": "#/$defs/counts"},
+    "local_executions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["compile", "build", "test", "vet", "conformance", "integration"],
+      "properties": {"compile": {"const": 0}, "build": {"const": 0}, "test": {"const": 0}, "vet": {"const": 0}, "conformance": {"const": 0}, "integration": {"const": 0}}
+    },
+    "conformance_pass": {"type": "boolean"}
+  },
+  "$defs": {
+    "metric": {"type": "object", "additionalProperties": false, "required": ["wall_ms", "peak_rss_kib"], "properties": {"wall_ms": {"type": "integer", "minimum": 0}, "peak_rss_kib": {"type": "integer", "minimum": 0}}},
+    "counts": {"type": "object", "additionalProperties": false, "required": ["total", "selected", "executed", "reused", "failed", "unknown"], "properties": {"total": {"type": "integer", "minimum": 0}, "selected": {"type": "integer", "minimum": 0}, "executed": {"type": "integer", "minimum": 0}, "reused": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "unknown": {"type": "integer", "minimum": 0}}}
+  }
+}

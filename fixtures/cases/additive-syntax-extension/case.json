@@ -1,0 +1,9 @@
+{
+  "id": "additive-syntax-extension",
+  "source": "source.gooo",
+  "expected_decision": "CLOSED",
+  "mode": "additive-extension",
+  "reference": "fixtures/cases/base-self-parse/source.gooo",
+  "require_semantic_change": true,
+  "require_syntax_change": true
+}

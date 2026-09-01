@@ -1,0 +1,8 @@
+{
+  "id": "precedence-preserving-change",
+  "source": "source.gooo",
+  "expected_decision": "CLOSED",
+  "mode": "precedence-preserving",
+  "reference": "fixtures/cases/base-self-parse/source.gooo",
+  "require_syntax_change": true
+}

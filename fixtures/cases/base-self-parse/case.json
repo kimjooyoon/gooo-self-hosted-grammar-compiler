@@ -1,0 +1,6 @@
+{
+  "id": "base-self-parse",
+  "source": "source.gooo",
+  "expected_decision": "CLOSED",
+  "mode": "self-parse"
+}

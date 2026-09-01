@@ -1,0 +1,6 @@
+{
+  "id": "forbidden-stage-escape",
+  "source": "source.gooo",
+  "expected_decision": "REFUTED",
+  "mode": "stage-origin-policy"
+}

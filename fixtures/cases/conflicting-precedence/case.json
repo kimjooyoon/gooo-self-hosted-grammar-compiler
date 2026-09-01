@@ -1,0 +1,6 @@
+{
+  "id": "conflicting-precedence",
+  "source": "source.gooo",
+  "expected_decision": "REFUTED",
+  "mode": "conflicting-precedence"
+}

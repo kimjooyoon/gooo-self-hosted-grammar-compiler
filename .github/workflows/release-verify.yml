@@ -1,0 +1,28 @@
+name: Verify immutable release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: Existing release id created by an authorized operator
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: gooo-self-hosted-grammar-compiler-release-assets
+          path: .ci/release-assets
+      - name: Verify public release API immutability and asset digests
+        env:
+          RELEASE_ID: ${{ inputs.release_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/ci/verify-immutable-release.sh "$RELEASE_ID" .ci/release-assets
