@@ -26,7 +26,7 @@ func TestInventoryUsesSourceRepositoryScope(t *testing.T) {
 	if values[0].RegularFiles != 1 || values[0].PhysicalLines != 1 || values[1].RegularFiles != 1 || values[1].PhysicalLines != 1 {
 		t.Fatalf("excluded files entered source inventory: %#v", values)
 	}
-	if values[0].DescendantDirs != 0 || values[1].DescendantDirs != 0 {
+	if values[0].DescendantDirs != 1 || values[1].DescendantDirs != 1 {
 		t.Fatalf("excluded directories entered source inventory: %#v", values)
 	}
 }
