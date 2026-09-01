@@ -63,6 +63,9 @@ all required metrics are integers, including physical lines, descendant
 directories, regular files, generated files/bytes, phase wall time and peak
 RSS, and test total/selected/executed/reused/failed/unknown counts. The root
 README is explicitly excluded from the `.go`/`.gooo` inventory.
+The source-repository inventory also skips `.git`, `.ci`, `generated/ci`,
+`vendor`, cache directories, toolchain directories, and `node_modules`; these
+are caller-owned outputs or non-source internals.
 
 Useful CI commands are:
 

@@ -4,7 +4,7 @@
   "title": "gooo self-hosted grammar compiler CI evidence v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "toolchain", "repository_root", "root_readme_excluded", "input_repository_writes", "caller_owned_temp_output_only", "automatic_authority", "inventory", "compile", "build", "test", "conformance", "integration", "tests", "local_executions", "conformance_pass"],
+  "required": ["schema", "toolchain", "repository_root", "root_readme_excluded", "input_repository_writes", "caller_owned_temp_output_only", "automatic_authority", "inventory_exclusions", "inventory", "compile", "build", "test", "conformance", "integration", "tests", "local_executions", "conformance_pass"],
   "properties": {
     "schema": {"const": "gooo/self-hosted-grammar-compiler/ci-evidence/v1"},
     "toolchain": {"type": "string", "minLength": 1},
@@ -13,6 +13,7 @@
     "input_repository_writes": {"const": 0},
     "caller_owned_temp_output_only": {"const": true},
     "automatic_authority": {"type": "object", "additionalProperties": false, "required": ["commit", "push", "merge", "release"], "properties": {"commit": {"const": 0}, "push": {"const": 0}, "merge": {"const": 0}, "release": {"const": 0}}},
+    "inventory_exclusions": {"type": "array", "const": [".git", ".ci", "generated/ci", "vendor", "cache", ".cache", "toolchain", ".toolchain", "node_modules"]},
     "inventory": {
       "type": "array", "minItems": 2, "maxItems": 2,
       "items": {

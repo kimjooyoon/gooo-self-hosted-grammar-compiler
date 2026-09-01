@@ -37,3 +37,11 @@ Byte replay additionally requires equal source bytes, generated stage1 and
 stage2 bytes, and terminal-reason digest. A proposed improvement is valid only
 when scenario, source digest, contract digest, toolchain identity, and runner
 digest are all exactly equal before and after.
+
+## Inventory scope
+
+Source metrics count regular `.go` and `.gooo` files below the repository root
+after excluding `.git`, `.ci`, `generated/ci`, `vendor`, `cache`, `.cache`,
+`toolchain`, `.toolchain`, and `node_modules`. The root `README.md` remains a
+separate explicit exclusion. Generated files are counted only when they remain
+inside the source scope; caller-owned generated output is not source evidence.
