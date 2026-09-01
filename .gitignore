@@ -1,0 +1,4 @@
+.ci/
+generated/ci/stage1/stage1_parser.go
+generated/ci/stage2/stage2_parser.go
+generated/ci/bootstrap.json
