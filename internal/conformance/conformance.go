@@ -142,13 +142,13 @@ func RunDirectory(root, referenceRoot string) (Report, error) {
 
 func validateTerminal(result compiler.Result) error {
 	if result.Terminal.Decision != result.Decision || result.TerminalDigest == "" {
-		return "terminal record and decision digest disagree"
+		return fmt.Errorf("terminal record and decision digest disagree")
 	}
 	if result.Decision == compiler.DecisionUnknown {
 		fields := []string{result.Terminal.Stage, result.Terminal.Step, result.Terminal.Reason, result.Terminal.UnknownClass, result.Terminal.NextOperation, result.Terminal.BlockedBy}
 		for _, field := range fields {
 			if field == "" {
-				return "UNKNOWN terminal record is missing a required field"
+				return fmt.Errorf("UNKNOWN terminal record is missing a required field")
 			}
 		}
 	}

@@ -88,6 +88,9 @@ func Command(args []string) error {
 	if filepath.IsAbs(*cases) {
 		casesPath = *cases
 	}
+	if _, err := os.Stat(grammarPath); err != nil {
+		return fmt.Errorf("grammar source: %w", err)
+	}
 
 	evidence := Evidence{
 		Schema:    "gooo/self-hosted-grammar-compiler/ci-evidence/v1",
