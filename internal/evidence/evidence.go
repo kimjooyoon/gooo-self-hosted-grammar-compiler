@@ -48,6 +48,7 @@ type Evidence struct {
 	InputRepositoryWrites     int              `json:"input_repository_writes"`
 	CallerOwnedTempOutputOnly bool             `json:"caller_owned_temp_output_only"`
 	AutomaticAuthority        map[string]int   `json:"automatic_authority"`
+	InventoryExclusions       []string         `json:"inventory_exclusions"`
 	Inventory                 []ScopeInventory `json:"inventory"`
 	Compile                   Metric           `json:"compile"`
 	Build                     Metric           `json:"build"`
@@ -96,8 +97,9 @@ func Command(args []string) error {
 		Schema:    "gooo/self-hosted-grammar-compiler/ci-evidence/v1",
 		Toolchain: toolchainVersion(), RepositoryRoot: root, ReadmeExcluded: true,
 		InputRepositoryWrites: 0, CallerOwnedTempOutputOnly: true,
-		AutomaticAuthority: map[string]int{"commit": 0, "push": 0, "merge": 0, "release": 0},
-		Inventory:          inventory(root), LocalExecutions: map[string]int64{"compile": 0, "build": 0, "test": 0, "vet": 0, "conformance": 0, "integration": 0},
+		AutomaticAuthority:  map[string]int{"commit": 0, "push": 0, "merge": 0, "release": 0},
+		InventoryExclusions: inventoryExclusions(),
+		Inventory:           inventory(root), LocalExecutions: map[string]int64{"compile": 0, "build": 0, "test": 0, "vet": 0, "conformance": 0, "integration": 0},
 	}
 	var firstErr error
 	compileMetric, _, err := run(root, "go", "test", "-run", "^$", "-count=1", "./...")
@@ -205,6 +207,9 @@ func inventory(root string) []ScopeInventory {
 				return nil
 			}
 			if info.IsDir() {
+				if excludedInventoryDirectory(root, path) {
+					return filepath.SkipDir
+				}
 				if path != root {
 					values[index].DescendantDirs++
 				}
@@ -228,6 +233,31 @@ func inventory(root string) []ScopeInventory {
 	}
 	sort.Slice(values, func(i, j int) bool { return values[i].Extension < values[j].Extension })
 	return values
+}
+
+func inventoryExclusions() []string {
+	return []string{".git", ".ci", "generated/ci", "vendor", "cache", ".cache", "toolchain", ".toolchain", "node_modules"}
+}
+
+func excludedInventoryDirectory(root, path string) bool {
+	if path == root {
+		return false
+	}
+	relative, err := filepath.Rel(root, path)
+	if err != nil {
+		return false
+	}
+	relative = filepath.ToSlash(relative)
+	if relative == "generated/ci" || strings.HasPrefix(relative, "generated/ci/") {
+		return true
+	}
+	for _, part := range strings.Split(relative, "/") {
+		switch part {
+		case ".git", ".ci", "vendor", "cache", ".cache", "toolchain", ".toolchain", "node_modules":
+			return true
+		}
+	}
+	return false
 }
 
 func physicalLines(path string) int64 {
