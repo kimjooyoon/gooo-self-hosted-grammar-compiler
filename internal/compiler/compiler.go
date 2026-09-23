@@ -243,24 +243,13 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 		if err != nil { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: %w", GeneratedStage, line, err) }
 		if len(fields) == 0 { continue }
 		kind := fields[0].Value
+		if err := validateGeneratedDeclaration(kind, fields, line); err != nil { return model.SyntaxTree{}, fmt.Errorf("generated stage %d: %w", GeneratedStage, err) }
 		if kind == "grammar" {
-			if grammarSeen || len(fields) != 3 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid grammar declaration", GeneratedStage, line) }
+			if grammarSeen { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: duplicate grammar declaration", GeneratedStage, line) }
 			grammarSeen = true
 		} else if kind == "package" || kind == "program" {
 			programSeen = true
-		} else if kind == "package" || kind == "namespace" {
-			if len(fields) != 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid %s declaration", GeneratedStage, line, kind) }
-		} else if kind == "program" || kind == "entity" || kind == "activity" {
-			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete %s declaration", GeneratedStage, line, kind) }
-		} else if kind == "stage" || kind == "ambiguity" || kind == "type" || kind == "effect" || kind == "fixed_denominator" {
-			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete declaration", GeneratedStage, line) }
-		} else if kind == "token" {
-			if len(fields) < 3 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete token declaration", GeneratedStage, line) }
-		} else if kind == "production" {
-			if len(fields) < 4 || fields[2].Value != "->" { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid production declaration", GeneratedStage, line) }
-		} else if kind == "precedence" || kind == "associativity" {
-			if len(fields) < 3 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete declaration", GeneratedStage, line) }
-		} else { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: unsupported declaration %q", GeneratedStage, line, kind) }
+		}
 		node := model.SyntaxNode{Kind: kind, Line: line}
 		for _, field := range fields { childKind := "field"; if field.Kind == "literal" || field.Kind == "regex" { childKind = field.Kind }; node.Children = append(node.Children, model.SyntaxNode{Kind: childKind, Value: field.Value, Line: line}) }
 		tree.Root.Children = append(tree.Root.Children, node)
@@ -268,6 +257,32 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 	if err := scanner.Err(); err != nil { return model.SyntaxTree{}, err }
 	if !grammarSeen && !programSeen { return model.SyntaxTree{}, fmt.Errorf("generated stage %d: grammar or Gooo program declaration is missing", GeneratedStage) }
 	return tree, nil
+}
+
+func validateGeneratedDeclaration(kind string, fields []generatedField, line int) error {
+	switch kind {
+	case "package", "namespace":
+		if len(fields) != 2 { return fmt.Errorf("generated stage %d line %d: %s expects a name", GeneratedStage, line, kind) }
+	case "program":
+		if len(fields) < 2 { return fmt.Errorf("generated stage %d line %d: program expects a name", GeneratedStage, line) }
+	case "entity":
+		if len(fields) < 2 { return fmt.Errorf("generated stage %d line %d: entity expects a name", GeneratedStage, line) }
+	case "activity":
+		if len(fields) < 2 { return fmt.Errorf("generated stage %d line %d: activity expects a signature", GeneratedStage, line) }
+	case "grammar":
+		if len(fields) != 3 { return fmt.Errorf("generated stage %d line %d: invalid grammar declaration", GeneratedStage, line) }
+	case "stage", "ambiguity", "type", "effect", "fixed_denominator":
+		if len(fields) < 2 { return fmt.Errorf("generated stage %d line %d: incomplete %s declaration", GeneratedStage, line, kind) }
+	case "token":
+		if len(fields) < 3 { return fmt.Errorf("generated stage %d line %d: incomplete token declaration", GeneratedStage, line) }
+	case "production":
+		if len(fields) < 4 || fields[2].Value != "->" { return fmt.Errorf("generated stage %d line %d: invalid production declaration", GeneratedStage, line) }
+	case "precedence", "associativity":
+		if len(fields) < 3 { return fmt.Errorf("generated stage %d line %d: incomplete declaration", GeneratedStage, line) }
+	default:
+		return fmt.Errorf("generated stage %d line %d: unsupported declaration %q", GeneratedStage, line, kind)
+	}
+	return nil
 }
 
 func generatedFields(line string) ([]generatedField, error) {
