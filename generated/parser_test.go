@@ -19,6 +19,12 @@ func TestStage2ParsesSample(t *testing.T) {
 	}
 }
 
+func TestStage1RejectsPackageWithoutName(t *testing.T) {
+	if _, err := ParseStage1([]byte("package\n")); err == nil {
+		t.Fatal("package without a name was accepted")
+	}
+}
+
 func TestStage1AndStage2HaveSameSyntaxTree(t *testing.T) {
 	raw, err := os.ReadFile("../meta/gooo-grammar.gooo")
 	if err != nil {
