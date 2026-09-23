@@ -216,6 +216,8 @@ func validateCollections(ir model.GrammarIR) []model.Diagnostic {
 	for _, precedence := range ir.Precedences {
 		if previous, exists := precedenceLevels[precedence.Name]; exists && previous != precedence.Level {
 			diagnostics = append(diagnostics, model.Diagnostic{Class: IssueConflictingPrecedence, Reason: "one operator has multiple precedence levels", Stage: "lower", Step: "precedence-consistency"})
+		} else if _, exists := precedenceLevels[precedence.Name]; exists {
+			diagnostics = append(diagnostics, model.Diagnostic{Class: IssueInvalidGrammar, Reason: "duplicate precedence declaration", Stage: "lower", Step: "precedence-uniqueness"})
 		}
 		precedenceLevels[precedence.Name] = precedence.Level
 	}
