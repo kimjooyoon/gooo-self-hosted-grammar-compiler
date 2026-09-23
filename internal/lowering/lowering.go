@@ -25,6 +25,7 @@ func Lower(tree model.SyntaxTree) (model.GrammarIR, []model.Diagnostic, error) {
 	grammarCount := 0
 	stageCount := 0
 	ambiguityCount := 0
+	fixedDenominatorCount := 0
 	for _, node := range tree.Root.Children {
 		fields := nodeValues(node)
 		if len(fields) == 0 {
@@ -75,6 +76,7 @@ func Lower(tree model.SyntaxTree) (model.GrammarIR, []model.Diagnostic, error) {
 			}
 			ir.Effects = append(ir.Effects, fields[1:]...)
 		case "fixed_denominator":
+			fixedDenominatorCount++
 			if len(fields) != 2 || !strings.HasPrefix(fields[1], "cases=") {
 				return ir, diagnostics, fmt.Errorf("line %d: fixed_denominator expects cases=N", node.Line)
 			}
@@ -129,8 +131,8 @@ func Lower(tree model.SyntaxTree) (model.GrammarIR, []model.Diagnostic, error) {
 			return ir, diagnostics, fmt.Errorf("line %d: unsupported declaration %q", node.Line, fields[0])
 		}
 	}
-	if grammarCount != 1 || stageCount != 1 || ambiguityCount != 1 {
-		return ir, diagnostics, fmt.Errorf("grammar requires exactly one grammar, stage, and ambiguity declaration")
+	if grammarCount != 1 || stageCount != 1 || ambiguityCount != 1 || fixedDenominatorCount != 1 {
+		return ir, diagnostics, fmt.Errorf("grammar requires exactly one grammar, stage, ambiguity, and fixed_denominator declaration")
 	}
 	if ir.Name == "" || ir.Version == "" || len(ir.Types) == 0 || len(ir.Effects) == 0 || ir.FixedDenominator != 7 || len(ir.Tokens) == 0 || len(ir.Productions) == 0 || len(ir.Precedences) == 0 || len(ir.Associativities) == 0 {
 		return ir, diagnostics, fmt.Errorf("grammar declarations are incomplete")
