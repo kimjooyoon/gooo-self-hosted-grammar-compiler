@@ -16,3 +16,9 @@ func TestGeneratedArtifactParsesSample(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGeneratedArtifactRejectsMalformedPackage(t *testing.T) {
+	if _, err := ParseStage2([]byte("package\n")); err == nil {
+		t.Fatal("generated parser accepted a package declaration without a name")
+	}
+}
