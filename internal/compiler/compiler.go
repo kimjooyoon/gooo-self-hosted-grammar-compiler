@@ -246,11 +246,15 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 		if kind == "grammar" {
 			if grammarSeen || len(fields) != 3 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid grammar declaration", GeneratedStage, line) }
 			grammarSeen = true
-		} else if kind == "package" || kind == "program" {
+		} else if kind == "package" {
+			if len(fields) != 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: package expects a name", GeneratedStage, line) }
 			programSeen = true
-		} else if kind == "package" || kind == "namespace" {
+		} else if kind == "program" {
+			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: program expects a name", GeneratedStage, line) }
+			programSeen = true
+		} else if kind == "namespace" {
 			if len(fields) != 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid %s declaration", GeneratedStage, line, kind) }
-		} else if kind == "program" || kind == "entity" || kind == "activity" {
+		} else if kind == "entity" || kind == "activity" {
 			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete %s declaration", GeneratedStage, line, kind) }
 		} else if kind == "stage" || kind == "ambiguity" || kind == "type" || kind == "effect" || kind == "fixed_denominator" {
 			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete declaration", GeneratedStage, line) }
