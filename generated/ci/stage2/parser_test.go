@@ -16,3 +16,9 @@ func TestGeneratedArtifactParsesSample(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGeneratedArtifactRejectsProgramWithoutName(t *testing.T) {
+	if _, err := ParseStage2([]byte("program\n")); err == nil {
+		t.Fatal("generated parser accepted a program declaration without a name")
+	}
+}
