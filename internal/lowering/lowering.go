@@ -197,6 +197,13 @@ func validateCollections(ir model.GrammarIR) []model.Diagnostic {
 			diagnostics = append(diagnostics, model.Diagnostic{Class: IssueInvalidGrammar, Reason: "duplicate or empty token name", Stage: "lower", Step: "token-uniqueness"})
 		}
 		tokens[token.Name] = true
+		attributes := map[string]bool{}
+		for _, attribute := range token.Attributes {
+			if attributes[attribute.Key] {
+				diagnostics = append(diagnostics, model.Diagnostic{Class: IssueInvalidGrammar, Reason: "duplicate token attribute key", Stage: "lower", Step: "token-attribute-uniqueness"})
+			}
+			attributes[attribute.Key] = true
+		}
 	}
 	productions := map[string]bool{}
 	productionBodies := map[string]bool{}
