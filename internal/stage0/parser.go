@@ -27,6 +27,7 @@ func Parse(raw []byte) (model.SyntaxTree, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(raw))
 	line := 0
 	grammarSeen := false
+	singletonSeen := map[string]bool{}
 	for scanner.Scan() {
 		line++
 		fields, err := seedFields(scanner.Text())
@@ -46,6 +47,12 @@ func Parse(raw []byte) (model.SyntaxTree, error) {
 		case "stage", "ambiguity", "type":
 			if len(fields) < 2 {
 				return model.SyntaxTree{}, fmt.Errorf("stage0 line %d: incomplete %s declaration", line, kind)
+			}
+			if kind == "stage" || kind == "ambiguity" {
+				if singletonSeen[kind] {
+					return model.SyntaxTree{}, fmt.Errorf("stage0 line %d: duplicate %s declaration", line, kind)
+				}
+				singletonSeen[kind] = true
 			}
 		case "effect", "fixed_denominator":
 			if len(fields) < 2 {
