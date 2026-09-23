@@ -149,12 +149,18 @@ func nodeValues(node model.SyntaxNode) []string {
 
 func keyValue(fields []string, key string) (string, bool) {
 	needle := key + "="
+	found := false
+	value := ""
 	for _, field := range fields {
 		if strings.HasPrefix(field, needle) && len(field) > len(needle) {
-			return strings.TrimPrefix(field, needle), true
+			if found {
+				return "", false
+			}
+			value = strings.TrimPrefix(field, needle)
+			found = true
 		}
 	}
-	return "", false
+	return value, found
 }
 
 func parseAttributes(fields []string) []model.Attribute {
