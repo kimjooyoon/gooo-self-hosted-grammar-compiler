@@ -248,6 +248,7 @@ func __FUNCTION__(raw []byte) (model.SyntaxTree, error) {
 			grammarSeen = true
 		} else if kind == "package" || kind == "namespace" {
 			if len(fields) != 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: invalid %s declaration", GeneratedStage, line, kind) }
+			if kind == "package" { programSeen = true }
 		} else if kind == "program" || kind == "entity" || kind == "activity" {
 			if len(fields) < 2 { return model.SyntaxTree{}, fmt.Errorf("generated stage %d line %d: incomplete %s declaration", GeneratedStage, line, kind) }
 			if kind == "program" { programSeen = true }
