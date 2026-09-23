@@ -23,9 +23,9 @@ func TestSeedRejectsDuplicateSingletonDeclarations(t *testing.T) {
 	for _, kind := range []string{"stage", "ambiguity"} {
 		t.Run(kind, func(t *testing.T) {
 			raw := []byte("grammar gooo v1\n" + kind + " 1\n" + kind + " 2\n")
-		if _, err := Parse(raw); err == nil {
-			t.Fatalf("Parse() accepted duplicate %s declaration", kind)
-		}
-	})
+			if _, err := Parse(raw); err == nil {
+				t.Fatalf("Parse() accepted duplicate %s declaration", kind)
+			}
+		})
 	}
 }
