@@ -20,7 +20,7 @@ func TestLowerRejectsDuplicateFixedDenominator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Lower(tree); err == nil || !strings.Contains(err.Error(), "exactly one fixed_denominator") {
+	if _, _, err := Lower(tree); err == nil || !strings.Contains(err.Error(), "fixed_denominator declaration") {
 		t.Fatalf("expected duplicate fixed_denominator error, got %v", err)
 	}
 }
