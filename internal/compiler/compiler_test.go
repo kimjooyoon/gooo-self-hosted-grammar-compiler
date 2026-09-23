@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/kimjooyoon/gooo-self-hosted-grammar-compiler/internal/model"
 )
 
 func TestBootstrapAuthorityIsClosed(t *testing.T) {
