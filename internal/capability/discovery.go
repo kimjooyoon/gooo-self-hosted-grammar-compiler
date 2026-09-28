@@ -26,6 +26,12 @@ type Capability struct {
 	Description string `json:"description"`
 }
 
+type SuggestedAction struct {
+	ID             string   `json:"id"`
+	Reason         string   `json:"reason"`
+	CapabilityIDs  []string `json:"capability_ids"`
+}
+
 type Report struct {
 	Status              Status             `json:"status"`
 	Query               string             `json:"query"`
@@ -34,6 +40,7 @@ type Report struct {
 	Capabilities        []Capability       `json:"capabilities"`
 	MatchedCapabilities []string           `json:"matched_capabilities"`
 	RelatedCapabilities []string           `json:"related_capabilities,omitempty"`
+	SuggestedActions    []SuggestedAction  `json:"suggested_actions"`
 	UnresolvedTerms     []string           `json:"unresolved_terms"`
 	Diagnostics         []model.Diagnostic `json:"diagnostics,omitempty"`
 	FirstMismatch       string             `json:"first_mismatch"`
@@ -49,14 +56,15 @@ type Report struct {
 // grammar. Query matching is lexical and deliberately preserves uncertainty.
 func Discover(raw []byte, query string) Report {
 	report := Report{
-		Status:        StatusUnknown,
-		Query:         strings.TrimSpace(query),
-		SourceDigest:  model.DigestBytes(raw),
-		Capabilities:  []Capability{},
-		ReadOnly:      true,
-		FirstMismatch: "grammar_source",
-		MissingStage:  "grammar_source",
-		Reason:        "authoritative grammar could not yet be bound",
+		Status:         StatusUnknown,
+		Query:          strings.TrimSpace(query),
+		SourceDigest:   model.DigestBytes(raw),
+		Capabilities:   []Capability{},
+		SuggestedActions: []SuggestedAction{},
+		ReadOnly:       true,
+		FirstMismatch:  "grammar_source",
+		MissingStage:   "grammar_source",
+		Reason:         "authoritative grammar could not yet be bound",
 	}
 	tree, err := stage0.Parse(raw)
 	if err != nil {
@@ -88,6 +96,7 @@ func Discover(raw []byte, query string) Report {
 	}
 
 	report.MatchedCapabilities, report.UnresolvedTerms, report.RelatedCapabilities = match(report.Query, report.Capabilities)
+	report.SuggestedActions = suggestedActions(report.MatchedCapabilities, report.RelatedCapabilities)
 	switch {
 	case isOverviewQuery(report.Query) || strings.TrimSpace(report.Query) == "":
 		report.Status = StatusBound
@@ -137,6 +146,11 @@ func (report Report) Validate() error {
 	if report.Status == StatusBound && (report.FirstMismatch != "" || report.MissingStage != "") {
 		return fmt.Errorf("bound grammar capability report retained an unresolved boundary")
 	}
+	for index, action := range report.SuggestedActions {
+		if strings.TrimSpace(action.ID) == "" || strings.TrimSpace(action.Reason) == "" || len(action.CapabilityIDs) == 0 {
+			return fmt.Errorf("suggested action %d is incomplete", index)
+		}
+	}
 	if report.ReportDigest != report.digest() {
 		return fmt.Errorf("grammar capability report digest mismatch")
 	}
@@ -156,6 +170,7 @@ func (report Report) digest() string {
 		Capabilities        []Capability
 		MatchedCapabilities []string
 		RelatedCapabilities []string
+		SuggestedActions    []SuggestedAction
 		UnresolvedTerms     []string
 		Diagnostics         []model.Diagnostic
 		FirstMismatch       string
@@ -167,9 +182,10 @@ func (report Report) digest() string {
 		Status: report.Status, Query: report.Query, SourceDigest: report.SourceDigest,
 		GrammarDigest: report.GrammarDigest, Capabilities: report.Capabilities,
 		MatchedCapabilities: report.MatchedCapabilities, RelatedCapabilities: report.RelatedCapabilities,
-		UnresolvedTerms: report.UnresolvedTerms, Diagnostics: report.Diagnostics,
-		FirstMismatch: report.FirstMismatch, MissingStage: report.MissingStage,
-		NextQuestion: report.NextQuestion, Reason: report.Reason, ReadOnly: report.ReadOnly,
+		SuggestedActions: report.SuggestedActions, UnresolvedTerms: report.UnresolvedTerms,
+		Diagnostics: report.Diagnostics, FirstMismatch: report.FirstMismatch,
+		MissingStage: report.MissingStage, NextQuestion: report.NextQuestion,
+		Reason: report.Reason, ReadOnly: report.ReadOnly,
 	})
 }
 
@@ -216,6 +232,48 @@ func capabilityDescription(kind, name string) string {
 	default:
 		return "Declared .gooo grammar capability: " + name
 	}
+}
+
+func suggestedActions(matched, related []string) []SuggestedAction {
+	ids := make([]string, 0, len(matched)+len(related))
+	seen := make(map[string]struct{})
+	for _, value := range append(append([]string{}, matched...), related...) {
+		if _, ok := seen[value]; ok {
+			continue
+		}
+		seen[value] = struct{}{}
+		ids = append(ids, value)
+	}
+	if len(ids) == 0 {
+		return []SuggestedAction{}
+	}
+	sort.Strings(ids)
+	actions := []SuggestedAction{{
+		ID:            "inspect-declarations",
+		Reason:        "Inspect declaration-backed capability evidence before attempting any operation; this hint is read-only.",
+		CapabilityIDs: ids,
+	}}
+	matchedSet := make(map[string]struct{}, len(matched))
+	for _, value := range matched {
+		matchedSet[value] = struct{}{}
+	}
+	for _, value := range matched {
+		if !strings.HasPrefix(value, "effect:") {
+			continue
+		}
+		effect := strings.TrimPrefix(value, "effect:")
+		switch effect {
+		case "execute", "generate", "lower", "parse", "verify":
+			actions = append(actions, SuggestedAction{
+				ID:            effect,
+				Reason:        "A declared .gooo effect names this bounded next operation; the suggestion does not execute it.",
+				CapabilityIDs: []string{value},
+			})
+		}
+	}
+	_ = matchedSet
+	sort.Slice(actions, func(i, j int) bool { return actions[i].ID < actions[j].ID })
+	return actions
 }
 
 func match(query string, all []Capability) ([]string, []string, []string) {
