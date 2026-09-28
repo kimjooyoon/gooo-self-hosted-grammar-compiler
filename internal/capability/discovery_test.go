@@ -24,6 +24,15 @@ func TestDiscoverReturnsBoundGrammarCapabilities(t *testing.T) {
 	}
 }
 
+func TestDiscoverExposesDeclarationBackedDescriptions(t *testing.T) {
+	report := Discover([]byte(validGrammar), "precedence")
+	for _, capability := range report.Capabilities {
+		if capability.ID == "precedence:IDENT" && capability.Description != "Declared .gooo precedence entry: IDENT" {
+			t.Fatalf("unexpected precedence description: %+v", capability)
+		}
+	}
+}
+
 func TestDiscoverReturnsRelatedCapabilitiesForNaturalLanguageIntent(t *testing.T) {
 	report := Discover([]byte(validGrammar), "can gooo understand operators?")
 	if report.Status != StatusDeferred || report.MissingStage != "query_terms" || len(report.RelatedCapabilities) < 2 {

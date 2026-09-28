@@ -20,9 +20,10 @@ const (
 )
 
 type Capability struct {
-	ID   string `json:"id"`
-	Kind string `json:"kind"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Kind        string `json:"kind"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type Report struct {
@@ -173,27 +174,48 @@ func (report Report) digest() string {
 }
 
 func capabilities(ir model.GrammarIR) []Capability {
-	result := []Capability{{ID: "grammar:" + ir.Name, Kind: "grammar", Name: ir.Name}}
+	result := []Capability{{ID: "grammar:" + ir.Name, Kind: "grammar", Name: ir.Name, Description: capabilityDescription("grammar", ir.Name)}}
 	for _, value := range ir.Types {
-		result = append(result, Capability{ID: "type:" + value, Kind: "type", Name: value})
+		result = append(result, Capability{ID: "type:" + value, Kind: "type", Name: value, Description: capabilityDescription("type", value)})
 	}
 	for _, value := range ir.Effects {
-		result = append(result, Capability{ID: "effect:" + value, Kind: "effect", Name: value})
+		result = append(result, Capability{ID: "effect:" + value, Kind: "effect", Name: value, Description: capabilityDescription("effect", value)})
 	}
 	for _, value := range ir.Tokens {
-		result = append(result, Capability{ID: "token:" + value.Name, Kind: "token", Name: value.Name})
+		result = append(result, Capability{ID: "token:" + value.Name, Kind: "token", Name: value.Name, Description: capabilityDescription("token", value.Name)})
 	}
 	for _, value := range ir.Productions {
-		result = append(result, Capability{ID: "production:" + value.Name, Kind: "production", Name: value.Name})
+		result = append(result, Capability{ID: "production:" + value.Name, Kind: "production", Name: value.Name, Description: capabilityDescription("production", value.Name)})
 	}
 	for _, value := range ir.Precedences {
-		result = append(result, Capability{ID: "precedence:" + value.Name, Kind: "precedence", Name: value.Name})
+		result = append(result, Capability{ID: "precedence:" + value.Name, Kind: "precedence", Name: value.Name, Description: capabilityDescription("precedence", value.Name)})
 	}
 	for _, value := range ir.Associativities {
-		result = append(result, Capability{ID: "associativity:" + value.Name, Kind: "associativity", Name: value.Name})
+		result = append(result, Capability{ID: "associativity:" + value.Name, Kind: "associativity", Name: value.Name, Description: capabilityDescription("associativity", value.Name)})
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].ID < result[j].ID })
 	return result
+}
+
+func capabilityDescription(kind, name string) string {
+	switch kind {
+	case "grammar":
+		return "Authoritative .gooo grammar declaration: " + name
+	case "type":
+		return "Declared .gooo grammar type: " + name
+	case "effect":
+		return "Declared .gooo grammar effect: " + name
+	case "token":
+		return "Declared .gooo lexical token: " + name
+	case "production":
+		return "Declared .gooo syntax production: " + name
+	case "precedence":
+		return "Declared .gooo precedence entry: " + name
+	case "associativity":
+		return "Declared .gooo associativity entry: " + name
+	default:
+		return "Declared .gooo grammar capability: " + name
+	}
 }
 
 func match(query string, all []Capability) ([]string, []string, []string) {
