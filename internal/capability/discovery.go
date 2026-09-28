@@ -26,20 +26,20 @@ type Capability struct {
 }
 
 type Report struct {
-	Status             Status             `json:"status"`
-	Query              string             `json:"query"`
-	SourceDigest       string             `json:"source_digest"`
-	GrammarDigest      string             `json:"grammar_digest,omitempty"`
-	Capabilities       []Capability       `json:"capabilities"`
+	Status              Status             `json:"status"`
+	Query               string             `json:"query"`
+	SourceDigest        string             `json:"source_digest"`
+	GrammarDigest       string             `json:"grammar_digest,omitempty"`
+	Capabilities        []Capability       `json:"capabilities"`
 	MatchedCapabilities []string           `json:"matched_capabilities"`
-	UnresolvedTerms    []string           `json:"unresolved_terms"`
-	Diagnostics        []model.Diagnostic `json:"diagnostics,omitempty"`
-	FirstMismatch      string             `json:"first_mismatch"`
-	MissingStage       string             `json:"missing_stage"`
-	NextQuestion       string             `json:"next_question"`
-	Reason             string             `json:"reason"`
-	ReadOnly           bool               `json:"read_only"`
-	ReportDigest       string             `json:"report_digest"`
+	UnresolvedTerms     []string           `json:"unresolved_terms"`
+	Diagnostics         []model.Diagnostic `json:"diagnostics,omitempty"`
+	FirstMismatch       string             `json:"first_mismatch"`
+	MissingStage        string             `json:"missing_stage"`
+	NextQuestion        string             `json:"next_question"`
+	Reason              string             `json:"reason"`
+	ReadOnly            bool               `json:"read_only"`
+	ReportDigest        string             `json:"report_digest"`
 }
 
 // Discover reads the authoritative grammar and exposes its declared surface.
@@ -47,11 +47,11 @@ type Report struct {
 // grammar. Query matching is lexical and deliberately preserves uncertainty.
 func Discover(raw []byte, query string) Report {
 	report := Report{
-		Status:       StatusUnknown,
-		Query:        strings.TrimSpace(query),
-		SourceDigest: model.DigestBytes(raw),
-		Capabilities: []Capability{},
-		ReadOnly:     true,
+		Status:        StatusUnknown,
+		Query:         strings.TrimSpace(query),
+		SourceDigest:  model.DigestBytes(raw),
+		Capabilities:  []Capability{},
+		ReadOnly:      true,
 		FirstMismatch: "grammar_source",
 		MissingStage:  "grammar_source",
 		Reason:        "authoritative grammar could not yet be bound",
