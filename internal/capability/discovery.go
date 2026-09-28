@@ -252,7 +252,8 @@ func suggestedActions(matched, related []string) []SuggestedAction {
 		ID:            "inspect-declarations",
 		Reason:        "Inspect declaration-backed capability evidence before attempting any operation; this hint is read-only.",
 		CapabilityIDs: ids,
-	}}	for _, value := range matched {
+	}}
+	for _, value := range matched {
 		if !strings.HasPrefix(value, "effect:") {
 			continue
 		}
