@@ -9,7 +9,7 @@ type GrammarSource
 effect parse lower generate execute verify
 fixed_denominator cases=7
 token IDENT /[A-Za-z_][A-Za-z0-9_]*/ role=identifier
-production file -> grammar_decl
+production file -> IDENT
 precedence IDENT level=10
 associativity IDENT left
 `
