@@ -30,12 +30,12 @@ func (report Report) Evidence() Evidence {
 
 func (evidence Evidence) Validate() error {
 	for name, value := range map[string]string{
-		"query":       evidence.QueryDigest,
-		"source":      evidence.SourceDigest,
-		"grammar":     evidence.GrammarDigest,
-		"capability":  evidence.CapabilityDigest,
-		"report":      evidence.ReportDigest,
-		"evidence":    evidence.EvidenceDigest,
+		"query":      evidence.QueryDigest,
+		"source":     evidence.SourceDigest,
+		"grammar":    evidence.GrammarDigest,
+		"capability": evidence.CapabilityDigest,
+		"report":     evidence.ReportDigest,
+		"evidence":   evidence.EvidenceDigest,
 	} {
 		if strings.TrimSpace(value) == "" {
 			return fmt.Errorf("grammar capability evidence %s digest is missing", name)
