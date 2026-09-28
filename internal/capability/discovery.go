@@ -363,7 +363,7 @@ func queryTerms(query string) []string {
 
 func isOverviewQuery(query string) bool {
 	query = strings.ToLower(strings.TrimSpace(query))
-	for _, phrase := range []string{"what can", "what can i do", "what can it do", "what is possible", "what is supported", "show examples", "what does", "무엇을", "가능"} {
+	for _, phrase := range []string{"what can", "what can i do", "what can it do", "what is possible", "what is supported", "show examples", "what does", "무엇을", "무엇인지", "무엇을 할 수", "할 수 있는", "어떤 것", "가능한", "가능"} {
 		if strings.Contains(query, phrase) {
 			return true
 		}
