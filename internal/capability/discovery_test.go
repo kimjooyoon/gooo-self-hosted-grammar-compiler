@@ -88,3 +88,16 @@ func TestDiscoverPreservesInvalidGrammarBoundary(t *testing.T) {
 		t.Fatalf("unknown report should validate: %v", err)
 	}
 }
+
+func TestDiscoverRecognizesNaturalKoreanOverviewQuery(t *testing.T) {
+	report := Discover([]byte(validGrammar), "gooo 언어에서 무엇을 할 수 있는지?")
+	if report.Status != StatusBound || len(report.MatchedCapabilities) == 0 {
+		t.Fatalf("unexpected Korean overview report: %+v", report)
+	}
+	if len(report.SuggestedActions) == 0 || report.SuggestedActions[0].ID != "inspect-declarations" {
+		t.Fatalf("expected declaration inspection hint: %+v", report.SuggestedActions)
+	}
+	if err := report.Validate(); err != nil {
+		t.Fatalf("Korean overview report should validate: %v", err)
+	}
+}
