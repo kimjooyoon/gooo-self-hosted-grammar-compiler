@@ -27,9 +27,9 @@ type Capability struct {
 }
 
 type SuggestedAction struct {
-	ID             string   `json:"id"`
-	Reason         string   `json:"reason"`
-	CapabilityIDs  []string `json:"capability_ids"`
+	ID            string   `json:"id"`
+	Reason        string   `json:"reason"`
+	CapabilityIDs []string `json:"capability_ids"`
 }
 
 type Report struct {
@@ -56,15 +56,15 @@ type Report struct {
 // grammar. Query matching is lexical and deliberately preserves uncertainty.
 func Discover(raw []byte, query string) Report {
 	report := Report{
-		Status:         StatusUnknown,
-		Query:          strings.TrimSpace(query),
-		SourceDigest:   model.DigestBytes(raw),
-		Capabilities:   []Capability{},
+		Status:           StatusUnknown,
+		Query:            strings.TrimSpace(query),
+		SourceDigest:     model.DigestBytes(raw),
+		Capabilities:     []Capability{},
 		SuggestedActions: []SuggestedAction{},
-		ReadOnly:       true,
-		FirstMismatch:  "grammar_source",
-		MissingStage:   "grammar_source",
-		Reason:         "authoritative grammar could not yet be bound",
+		ReadOnly:         true,
+		FirstMismatch:    "grammar_source",
+		MissingStage:     "grammar_source",
+		Reason:           "authoritative grammar could not yet be bound",
 	}
 	tree, err := stage0.Parse(raw)
 	if err != nil {
