@@ -1,0 +1,32 @@
+module gooo_grammar_capability_evidence
+
+input query
+input source_digest
+input grammar_digest
+input capability_digest
+input report_digest
+input evidence_digest
+input first_mismatch
+input missing_stage
+
+status BOUND query, source, grammar, capability, and report evidence are linked
+status DEFERRED query or grammar evidence is unresolved
+status UNKNOWN source or report evidence is missing
+
+field status
+field query_digest
+field source_digest
+field grammar_digest
+field capability_digest
+field report_digest
+field evidence_digest
+field first_mismatch
+field missing_stage
+
+constraint query_evidence_is_bound
+constraint source_grammar_capability_chain
+constraint evidence_digest_is_derived
+constraint unknown_preserves_first_boundary
+constraint deferred_preserves_missing_stage
+constraint no_program_execution
+constraint read_only
