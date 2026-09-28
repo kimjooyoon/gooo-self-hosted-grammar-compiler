@@ -24,6 +24,16 @@ func TestDiscoverReturnsBoundGrammarCapabilities(t *testing.T) {
 	}
 }
 
+func TestDiscoverReturnsRelatedCapabilitiesForNaturalLanguageIntent(t *testing.T) {
+	report := Discover([]byte(validGrammar), "can gooo understand operators?")
+	if report.Status != StatusDeferred || report.MissingStage != "query_terms" || len(report.RelatedCapabilities) < 2 {
+		t.Fatalf("unexpected related report: %+v", report)
+	}
+	if err := report.Validate(); err != nil {
+		t.Fatalf("related report should validate: %v", err)
+	}
+}
+
 func TestDiscoverPreservesUnresolvedQueryTerms(t *testing.T) {
 	report := Discover([]byte(validGrammar), "precedence quantum")
 	if report.Status != StatusDeferred || report.MissingStage != "query_terms" || len(report.UnresolvedTerms) != 1 {

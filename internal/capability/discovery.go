@@ -32,6 +32,7 @@ type Report struct {
 	GrammarDigest       string             `json:"grammar_digest,omitempty"`
 	Capabilities        []Capability       `json:"capabilities"`
 	MatchedCapabilities []string           `json:"matched_capabilities"`
+	RelatedCapabilities []string           `json:"related_capabilities,omitempty"`
 	UnresolvedTerms     []string           `json:"unresolved_terms"`
 	Diagnostics         []model.Diagnostic `json:"diagnostics,omitempty"`
 	FirstMismatch       string             `json:"first_mismatch"`
@@ -85,7 +86,7 @@ func Discover(raw []byte, query string) Report {
 		return report
 	}
 
-	report.MatchedCapabilities, report.UnresolvedTerms = match(report.Query, report.Capabilities)
+	report.MatchedCapabilities, report.UnresolvedTerms, report.RelatedCapabilities = match(report.Query, report.Capabilities)
 	switch {
 	case isOverviewQuery(report.Query) || strings.TrimSpace(report.Query) == "":
 		report.Status = StatusBound
@@ -93,6 +94,12 @@ func Discover(raw []byte, query string) Report {
 		report.MissingStage = ""
 		report.NextQuestion = "Which declared grammar capability should be inspected next?"
 		report.Reason = "the declared grammar capability surface is available for read-only inspection"
+	case len(report.MatchedCapabilities) == 0 && len(report.RelatedCapabilities) > 0:
+		report.Status = StatusDeferred
+		report.FirstMismatch = "query_terms"
+		report.MissingStage = "query_terms"
+		report.NextQuestion = "Which related declared capability should be confirmed for this natural-language query?"
+		report.Reason = "natural-language terms suggest declared capabilities, but the query is not directly bound"
 	case len(report.MatchedCapabilities) == 0:
 		report.Status = StatusUnknown
 		report.FirstMismatch = "capability_query"
@@ -147,6 +154,7 @@ func (report Report) digest() string {
 		GrammarDigest       string
 		Capabilities        []Capability
 		MatchedCapabilities []string
+		RelatedCapabilities []string
 		UnresolvedTerms     []string
 		Diagnostics         []model.Diagnostic
 		FirstMismatch       string
@@ -157,10 +165,10 @@ func (report Report) digest() string {
 	}{
 		Status: report.Status, Query: report.Query, SourceDigest: report.SourceDigest,
 		GrammarDigest: report.GrammarDigest, Capabilities: report.Capabilities,
-		MatchedCapabilities: report.MatchedCapabilities, UnresolvedTerms: report.UnresolvedTerms,
-		Diagnostics: report.Diagnostics, FirstMismatch: report.FirstMismatch,
-		MissingStage: report.MissingStage, NextQuestion: report.NextQuestion,
-		Reason: report.Reason, ReadOnly: report.ReadOnly,
+		MatchedCapabilities: report.MatchedCapabilities, RelatedCapabilities: report.RelatedCapabilities,
+		UnresolvedTerms: report.UnresolvedTerms, Diagnostics: report.Diagnostics,
+		FirstMismatch: report.FirstMismatch, MissingStage: report.MissingStage,
+		NextQuestion: report.NextQuestion, Reason: report.Reason, ReadOnly: report.ReadOnly,
 	})
 }
 
@@ -188,16 +196,17 @@ func capabilities(ir model.GrammarIR) []Capability {
 	return result
 }
 
-func match(query string, all []Capability) ([]string, []string) {
+func match(query string, all []Capability) ([]string, []string, []string) {
 	if isOverviewQuery(query) || strings.TrimSpace(query) == "" {
 		matched := make([]string, 0, len(all))
 		for _, value := range all {
 			matched = append(matched, value.ID)
 		}
-		return matched, []string{}
+		return matched, []string{}, []string{}
 	}
 	terms := queryTerms(query)
 	matchedSet := make(map[string]struct{})
+	relatedSet := make(map[string]struct{})
 	unresolved := make([]string, 0)
 	for _, term := range terms {
 		found := false
@@ -208,20 +217,60 @@ func match(query string, all []Capability) ([]string, []string) {
 				found = true
 			}
 		}
-		if !found {
-			unresolved = append(unresolved, term)
+		if found {
+			continue
 		}
+		for _, kind := range relatedKinds(term) {
+			for _, value := range all {
+				if value.Kind == kind {
+					relatedSet[value.ID] = struct{}{}
+				}
+			}
+		}
+		unresolved = append(unresolved, term)
 	}
 	matched := make([]string, 0, len(matchedSet))
 	for value := range matchedSet {
 		matched = append(matched, value)
 	}
+	related := make([]string, 0, len(relatedSet))
+	for value := range relatedSet {
+		if _, ok := matchedSet[value]; !ok {
+			related = append(related, value)
+		}
+	}
 	sort.Strings(matched)
-	return matched, unresolved
+	sort.Strings(related)
+	return matched, unresolved, related
+}
+
+var queryCapabilityAliases = map[string][]string{
+	"analyze":     {"parse", "lower"},
+	"build":       {"generate"},
+	"check":       {"verify"},
+	"compile":     {"generate"},
+	"explore":     {"grammar", "production", "token"},
+	"generate":    {"generate"},
+	"inspect":     {"grammar", "production", "token"},
+	"parse":       {"parse"},
+	"read":        {"parse"},
+	"structure":   {"production", "token"},
+	"syntax":      {"production", "token"},
+	"transform":   {"lower"},
+	"understand":  {"parse", "lower"},
+	"validate":    {"verify"},
+	"verify":      {"verify"},
+	"what":        {"grammar"},
+	"operator":    {"precedence", "associativity"},
+	"operators":   {"precedence", "associativity"},
+}
+
+func relatedKinds(term string) []string {
+	return queryCapabilityAliases[term]
 }
 
 func queryTerms(query string) []string {
-	stop := map[string]bool{"a": true, "an": true, "and": true, "can": true, "capabilities": true, "do": true, "does": true, "gooo": true, "grammar": true, "how": true, "is": true, "language": true, "show": true, "support": true, "the": true, "this": true, "what": true, "with": true}
+	stop := map[string]bool{"a": true, "an": true, "and": true, "can": true, "capabilities": true, "do": true, "does": true, "gooo": true, "grammar": true, "how": true, "i": true, "is": true, "language": true, "me": true, "of": true, "on": true, "show": true, "support": true, "tell": true, "the": true, "this": true, "to": true, "what": true, "with": true, "would": true}
 	fields := strings.FieldsFunc(strings.ToLower(strings.TrimSpace(query)), func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) })
 	seen := make(map[string]struct{})
 	terms := make([]string, 0, len(fields))
@@ -241,7 +290,7 @@ func queryTerms(query string) []string {
 
 func isOverviewQuery(query string) bool {
 	query = strings.ToLower(strings.TrimSpace(query))
-	for _, phrase := range []string{"what can", "capabilities", "show examples", "what does", "무엇을", "가능"} {
+	for _, phrase := range []string{"what can", "what can i do", "what can it do", "what is possible", "what is supported", "show examples", "what does", "무엇을", "가능"} {
 		if strings.Contains(query, phrase) {
 			return true
 		}
