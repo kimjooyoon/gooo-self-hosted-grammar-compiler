@@ -19,8 +19,31 @@ func TestDiscoverReturnsBoundGrammarCapabilities(t *testing.T) {
 	if report.Status != StatusBound || len(report.MatchedCapabilities) == 0 || report.GrammarDigest == "" {
 		t.Fatalf("unexpected bound report: %+v", report)
 	}
+	if len(report.SuggestedActions) == 0 || report.SuggestedActions[0].ID != "inspect-declarations" {
+		t.Fatalf("expected declaration inspection hint: %+v", report.SuggestedActions)
+	}
 	if err := report.Validate(); err != nil {
 		t.Fatalf("bound report should validate: %v", err)
+	}
+}
+
+func TestDiscoverSuggestsDeclaredEffectsForOverview(t *testing.T) {
+	report := Discover([]byte(validGrammar), "what can gooo do?")
+	if report.Status != StatusBound {
+		t.Fatalf("unexpected overview report: %+v", report)
+	}
+	want := map[string]bool{
+		"execute": true, "generate": true, "inspect-declarations": true,
+		"lower": true, "parse": true, "verify": true,
+	}
+	for _, action := range report.SuggestedActions {
+		delete(want, action.ID)
+	}
+	if len(want) != 0 {
+		t.Fatalf("missing declared effect hints: %+v", want)
+	}
+	if err := report.Validate(); err != nil {
+		t.Fatalf("overview report should validate: %v", err)
 	}
 }
 
@@ -37,6 +60,9 @@ func TestDiscoverReturnsRelatedCapabilitiesForNaturalLanguageIntent(t *testing.T
 	report := Discover([]byte(validGrammar), "can gooo understand operators?")
 	if report.Status != StatusDeferred || report.MissingStage != "query_terms" || len(report.RelatedCapabilities) < 2 {
 		t.Fatalf("unexpected related report: %+v", report)
+	}
+	if len(report.SuggestedActions) != 1 || report.SuggestedActions[0].ID != "inspect-declarations" {
+		t.Fatalf("unexpected deferred action hints: %+v", report.SuggestedActions)
 	}
 	if err := report.Validate(); err != nil {
 		t.Fatalf("related report should validate: %v", err)
