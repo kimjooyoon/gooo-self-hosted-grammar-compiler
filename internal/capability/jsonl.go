@@ -16,9 +16,9 @@ type CapabilityJSONLRequest struct {
 
 type CapabilityJSONLResponse struct {
 	ID       json.RawMessage `json:"id"`
-	Report   Report         `json:"report"`
-	Evidence Evidence       `json:"evidence"`
-	ReadOnly bool           `json:"read_only"`
+	Report   Report          `json:"report"`
+	Evidence Evidence        `json:"evidence"`
+	ReadOnly bool            `json:"read_only"`
 }
 
 func ServeCapabilityJSONL(input io.Reader, output io.Writer) error {
