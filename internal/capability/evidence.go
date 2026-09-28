@@ -8,13 +8,13 @@ import (
 )
 
 type Evidence struct {
-	Status               Status `json:"status"`
-	FirstMismatch        string `json:"first_mismatch"`
-	MissingStage         string `json:"missing_stage"`
-	QueryDigest          string `json:"query_digest"`
-	SourceDigest         string `json:"source_digest"`
-	GrammarDigest        string `json:"grammar_digest"`
-	CapabilityDigest     string `json:"capability_digest"`
+	Status                Status `json:"status"`
+	FirstMismatch         string `json:"first_mismatch"`
+	MissingStage          string `json:"missing_stage"`
+	QueryDigest           string `json:"query_digest"`
+	SourceDigest          string `json:"source_digest"`
+	GrammarDigest         string `json:"grammar_digest"`
+	CapabilityDigest      string `json:"capability_digest"`
 	SuggestedActionDigest string `json:"suggested_action_digest"`
 	ReportDigest          string `json:"report_digest"`
 	EvidenceDigest        string `json:"evidence_digest"`
@@ -91,7 +91,7 @@ func (evidence Evidence) digest() string {
 		MissingStage:          evidence.MissingStage,
 		QueryDigest:           evidence.QueryDigest,
 		SourceDigest:          evidence.SourceDigest,
-		GrammarDigest:          evidence.GrammarDigest,
+		GrammarDigest:         evidence.GrammarDigest,
 		CapabilityDigest:      evidence.CapabilityDigest,
 		SuggestedActionDigest: evidence.SuggestedActionDigest,
 		ReportDigest:          evidence.ReportDigest,
