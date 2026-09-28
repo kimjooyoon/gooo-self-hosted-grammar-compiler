@@ -252,12 +252,7 @@ func suggestedActions(matched, related []string) []SuggestedAction {
 		ID:            "inspect-declarations",
 		Reason:        "Inspect declaration-backed capability evidence before attempting any operation; this hint is read-only.",
 		CapabilityIDs: ids,
-	}}
-	matchedSet := make(map[string]struct{}, len(matched))
-	for _, value := range matched {
-		matchedSet[value] = struct{}{}
-	}
-	for _, value := range matched {
+	}}	for _, value := range matched {
 		if !strings.HasPrefix(value, "effect:") {
 			continue
 		}
@@ -271,8 +266,6 @@ func suggestedActions(matched, related []string) []SuggestedAction {
 			})
 		}
 	}
-	_ = matchedSet
-	sort.Slice(actions, func(i, j int) bool { return actions[i].ID < actions[j].ID })
 	return actions
 }
 
