@@ -1,7 +1,9 @@
 name: one-off branch formatter
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - feature/grammar-capability-query-20260928
 
 permissions:
   contents: write
