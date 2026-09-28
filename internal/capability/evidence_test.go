@@ -8,7 +8,7 @@ func TestReportEvidenceBindsQueryAndCapabilitySurface(t *testing.T) {
 	if err := evidence.Validate(); err != nil {
 		t.Fatalf("report evidence should validate: %v", err)
 	}
-	if evidence.QueryDigest == "" || evidence.CapabilityDigest == "" || evidence.ReportDigest == "" {
+	if evidence.QueryDigest == "" || evidence.CapabilityDigest == "" || evidence.SuggestedActionDigest == "" || evidence.ReportDigest == "" {
 		t.Fatalf("report evidence is incomplete: %+v", evidence)
 	}
 	other := Discover([]byte(validGrammar), "what can gooo do with token")
@@ -23,7 +23,7 @@ func TestReportEvidencePreservesUnknownReportIdentity(t *testing.T) {
 	if err := evidence.Validate(); err != nil {
 		t.Fatalf("unknown report evidence should validate: %v", err)
 	}
-	if evidence.ReportDigest == "" || evidence.EvidenceDigest == "" {
+	if evidence.ReportDigest == "" || evidence.SuggestedActionDigest == "" || evidence.EvidenceDigest == "" {
 		t.Fatalf("unknown report evidence is incomplete: %+v", evidence)
 	}
 }
